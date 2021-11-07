@@ -35,28 +35,13 @@ class FieldChecker:
     def get_threshold(self):
         return self.threshold
 
-
-    def field_recognition(self):
-
+    def findLines(self):
         img = cv2.imread(self.image)
         gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
         thresh = cv2.threshold(gray, 165, 255, cv2.THRESH_BINARY)[1]
 
-        #image manipulating
-        # gray2 = gray.copy()
-        # rows = gray2.shape[0]
-        # cols = gray2.shape[1]
-        # for row in range(0, rows):
-        #     for col in range(0, cols):
-        #         if gray2[row, col] < 100:
-        #             gray2[row, col] = 0
-        #
-        # plt.imshow(gray2)
-        # plt.show()
-        #image manipulating end
-
-        # blur = cv2.GaussianBlur(gray, (3, 3), 0)
+        blur = cv2.GaussianBlur(gray, (3, 3), 0)
         edges = cv2.Canny(gray, 80, 150, apertureSize=3)
 
         self.set_dimensions(img)
@@ -81,16 +66,22 @@ class FieldChecker:
 
             cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
+        # PRINT THE RESULT
+        self.showImages(lines, img, gray, edges)
+
+        return lines, lines_size
+
+    def showImages(self, lines, img, gray, edges):
         print(f"{lines}\n")
 
-        cv2.imwrite('img/houghlines3.png', img)
+        cv2.imshow("img", img)
+        cv2.imshow("grey", gray)
+        cv2.imshow("edges", edges)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-        plt.imshow(img)
-        plt.show()
-        plt.imshow(gray)
-        plt.show()
-        plt.imshow(edges)
-        plt.show()
+    def field_recognition(self):
+        lines, lines_size = self.findLines()
 
         vertical = []
         horizontal = []
@@ -98,13 +89,15 @@ class FieldChecker:
         # lines has to match, orientation has to match (theta is either 0 or 90 degrees - they have to be perpendicular
         # to each other). Then we divide them into vertical and horizontal (lines) groups.
 
+        alignmError = 0.24 # ~14 degrees
+
         if lines_size == 8 or lines_size == 4:
             for i in range(0, lines_size):
-                if lines[i][0][1] > 0.0 - 0.12 and lines[i][0][1] < 0.0 + 0.12:
+                if lines[i][0][1] > 0.0 - alignmError and lines[i][0][1] < 0.0 + alignmError:
                     vertical.append(lines[i][0])
-                elif lines[i][0][1] > np.pi / 2 - 0.12 and lines[i][0][1] < np.pi / 2 + 0.12:   # around 7 degrees error
-                    horizontal.append(lines[i][0])                                              # possible (0.12 radians
-                else:                                                                           # is ~7 deg)
+                elif lines[i][0][1] > np.pi / 2 - alignmError and lines[i][0][1] < np.pi / 2 + alignmError:
+                    horizontal.append(lines[i][0])
+                else:
                     print("\nIt is not the real tic-tac-toe field! Orientation of lines does not match.")
                     return False
         else:
@@ -175,10 +168,10 @@ class FieldChecker:
             cv2.line(result, pt1, pt2, (0, 0, 255), 2, cv2.LINE_AA)
 
         # save resulting images
-        cv2.imwrite('fabric_equalized_thresh.jpg', thresh)
-        cv2.imwrite('fabric_equalized_morph.jpg', morph)
-        cv2.imwrite('fabric_equalized_edges.jpg', edges)
-        cv2.imwrite('fabric_equalized_lines.jpg', result)
+        cv2.imwrite('aux/fabric_equalized_thresh.jpg', thresh)
+        cv2.imwrite('aux/fabric_equalized_morph.jpg', morph)
+        cv2.imwrite('aux/fabric_equalized_edges.jpg', edges)
+        cv2.imwrite('aux/fabric_equalized_lines.jpg', result)
 
         # show thresh and result
         cv2.imshow("thresh", thresh)
@@ -190,6 +183,6 @@ class FieldChecker:
 
 
 if __name__ == "__main__":
-    checker = FieldChecker('img/ttt_3.png')
+    checker = FieldChecker('img/sc3.png')
     checker.field_recognition()
     # checker.auxilary_function()

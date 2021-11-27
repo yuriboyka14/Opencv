@@ -34,6 +34,57 @@ def find_circle(processed_img, output_img, last_circles):
 
     return circles
             
+def circle_position(circles, cnt):
+    grid_return = np.zeros((3,3), dtype=bool)
+    grid_x = np.zeros((3,3), dtype=bool)
+    grid_y = np.zeros((3,3), dtype=bool)
+
+    leftup_x = cnt[3][0]
+    leftup_y = cnt[3][1]
+
+    rightup_x = cnt[0][0]
+    rightup_y = cnt[0][1]
+
+    leftdown_x = cnt[2][0]
+    leftdown_y = cnt[2][1]
+
+    rightdown_x = cnt[1][0]
+    rightdown_y = cnt[1][1]
+
+    for cr in circles[0, :]:
+        (x, y) = (cr[0], cr[1])
+        #grid_x
+        if x <= leftup_x:
+            grid_x[:][0] = True
+        
+        elif x >= leftup_x and x <= rightup_x:
+            grid_x[:][1] = True
+        
+        else:
+            grid_x[:][2] = True
+
+        #grid_y
+        if y <= leftup_y:
+            grid_y[0][:] = True
+        
+        elif y >= leftup_y and y <= leftdown_y:
+            grid_y[1][:] = True
+        
+        else:
+            grid_y[2][:] = True
+
+        for t in range(3):
+            for r in range(3):
+                grid_return[t][r] = grid_x and grid_y
+
+    return grid_return
+
+       
+                
+        
+
+
+
 
 vid = cv2.VideoCapture(0)
 last_contour = None
@@ -63,7 +114,7 @@ while True:
 
     if k & 0xFF == ord('q'):
         break
-
+    
     cv2.imshow('image', img)
     cv2.imshow('edges', processed_img)
         

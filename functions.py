@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 
 def shape_recognition(filename):
@@ -141,5 +142,89 @@ def circle_recognition_camera():
     cv2.destroyAllWindows()
 
 
+def auxilary_function(image):
+
+    img = cv2.imread(image)
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)[1]
+
+    kernel = np.ones((15, 1), np.uint8)
+    morph = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+    kernel = np.ones((17, 3), np.uint8)
+    morph = cv2.morphologyEx(morph, cv2.MORPH_CLOSE, kernel)
+
+    edges = cv2.Canny(img, 175, 200)
+
+    result = img.copy()
+    lines = cv2.HoughLines(edges, 1, math.pi / 180.0, 165, np.array([]), 0, 0)
+    a, b, c = lines.shape
+    for i in range(a):
+        rho = lines[i][0][0]
+        theta = lines[i][0][1]
+        a = math.cos(theta)
+        b = math.sin(theta)
+        x0, y0 = a * rho, b * rho
+        pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
+        pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
+        cv2.line(result, pt1, pt2, (0, 0, 255), 2, cv2.LINE_AA)
+
+    cv2.imwrite('aux/fabric_equalized_thresh.jpg', thresh)
+    cv2.imwrite('aux/fabric_equalized_morph.jpg', morph)
+    cv2.imwrite('aux/fabric_equalized_edges.jpg', edges)
+    cv2.imwrite('aux/fabric_equalized_lines.jpg', result)
+
+    cv2.imshow("thresh", thresh)
+    cv2.imshow("morph", morph)
+    cv2.imshow("edges", edges)
+    cv2.imshow("result", result)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+def auxilary_function_2(image):
+    # kernel used for noise removal
+    kernel = np.ones((7, 7), np.uint8)
+    # Load a color image
+    img = cv2.imread(image)
+    # get the image width and height
+    img_width = img.shape[0]
+    img_height = img.shape[1]
+
+    # turn into grayscale
+    img_g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # turn into thresholded binary
+    ret, thresh1 = cv2.threshold(img_g, 127, 255, cv2.THRESH_BINARY)
+    # remove noise from binary
+    thresh1 = cv2.morphologyEx(thresh1, cv2.MORPH_OPEN, kernel)
+
+    # find and draw contours. RETR_EXTERNAL retrieves only the extreme outer contours
+    contours, im2 = cv2.findContours(thresh1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(img, contours, -1, (0, 255, 0), 15)
+
+    cv2.imshow("result", thresh1)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def auxilary_function_3(image):
+
+    img = cv2.imread(image, 0)
+    img = cv2.medianBlur(img, 5)
+    ret, th1 = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
+    th2 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+    th3 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    titles = ['Original Image', 'Global Thresholding (v = 127)',
+              'Adaptive Mean Thresholding', 'Adaptive Gaussian Thresholding']
+    images = [img, th1, th2, th3]
+    for i in range(4):
+        plt.subplot(2, 2, i + 1), plt.imshow(images[i], 'gray')
+        plt.title(titles[i])
+        plt.xticks([]), plt.yticks([])
+    plt.show()
+
+    return th3
+
+
 if __name__ == "__main__":
-    pass
+    shape_recognition_camera()

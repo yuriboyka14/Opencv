@@ -8,7 +8,7 @@ def preprocess(img):
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
 
     edges = cv2.Canny(gray, 40, 170)
-    dillated_edges = cv2.dilate(edges.copy(), None, iterations = 3)
+    dillated_edges = cv2.dilate(edges.copy(), None, iterations = 5)
     dillated_edges = cv2.morphologyEx(dillated_edges, cv2.MORPH_CLOSE, np.ones((5,5),np.uint8))
 
     return dillated_edges 
@@ -20,17 +20,6 @@ def find_circle(processed_img, output_img, last_circles):
     
     if circles is not None:
         circles = np.uint16(np.around(circles))
-
-        for i in circles[0, :]:
-            center = (i[0], i[1])
-            radius = i[2]
-            cv2.circle(output_img, center, radius, (187, 206, 125), 3)
-
-    elif last_circles is not None:
-        for i in last_circles[0, :]:
-            center = (i[0], i[1])
-            radius = i[2]
-            cv2.circle(output_img, center, radius, (187, 206, 125), 3)
 
     return circles
 
@@ -113,7 +102,6 @@ while True:
             cv2.drawContours(img, [last_contour], -1, (150,255,155), 3)
 
 
-    last_circles = find_circle(processed_img, img, last_circles)
     
     print_cricles(img, last_circles)
 
@@ -121,6 +109,9 @@ while True:
 
     if k & 0xFF == ord('q'):
         break
+
+    if k & 0xFF == ord('\r'):
+        last_circles = find_circle(processed_img, img, last_circles)
     
     cv2.imshow('image', img)
     cv2.imshow('edges', processed_img)

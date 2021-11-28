@@ -32,51 +32,64 @@ def print_cricles(img, circles):
             cv2.circle(img, center, radius, (187, 206, 125), 3)
 
 
-def circle_position(circles, cnt):
+def circle_position(circles, cnt, img):
     grid_return = np.zeros((3,3), dtype=bool)
-    grid_x = np.zeros((3,3), dtype=bool)
-    grid_y = np.zeros((3,3), dtype=bool)
+    height = img.shape[1]
+    xd = np.zeros((3,3), dtype=bool)
 
-    leftup_x = cnt[3][0]
-    leftup_y = cnt[3][1]
+    
+    if cnt is not None:
+        if circles is not None:
+            leftup_x = cnt[3][0][0]
+            leftup_y = cnt[3][0][1]
 
-    rightup_x = cnt[0][0]
-    rightup_y = cnt[0][1]
+            rightup_x = cnt[0][0][0]
+            rightup_y = cnt[0][0][1]
 
-    leftdown_x = cnt[2][0]
-    leftdown_y = cnt[2][1]
+            leftdown_x = cnt[2][0][0]
+            leftdown_y = cnt[2][0][1]
 
-    rightdown_x = cnt[1][0]
-    rightdown_y = cnt[1][1]
+            rightdown_x = cnt[1][0][0]
+            rightdown_y = cnt[1][0][1]
 
-    for cr in circles[0, :]:
-        (x, y) = (cr[0], cr[1])
+            for cr in circles[0, :]:
+                (x, y) = (cr[0], cr[1])
 
-        #grid_x
-        if x <= leftup_x:
-            grid_x[:][0] = True
-        
-        elif x >= leftup_x and x <= rightdown_x:
-            grid_x[:][1] = True
-        
+                grid_x = np.zeros((3,3), dtype=bool)
+                grid_y = np.zeros((3,3), dtype=bool)
+
+                #grid_x
+                if x <= leftup_x:
+                    grid_x[:][0] = True
+                
+                elif x >= leftup_x and x <= rightdown_x:
+                    grid_x[:][1] = True
+                
+                else:
+                    grid_x[:][2] = True
+
+                #grid_y
+                if y > leftdown_y:
+                    grid_y[0][:] = True
+                
+                elif y <= leftdown_y and y >= rightup_y:
+                    grid_y[1][:] = True
+                
+                else:
+                    grid_y[2][:] = True
+
+                grid_x = np.rot90(grid_x)
+
+                #grid
+                for t in range(3):
+                    for r in range(3):
+                        grid_return[t][r] = grid_return[t][r] or (grid_x[t][r] and grid_y[t][r]) 
+    
         else:
-            grid_x[:][2] = True
-
-        #grid_y
-        if y <= leftup_y:
-            grid_y[0][:] = True
-        
-        elif y >= leftup_y and y <= leftdown_y:
-            grid_y[1][:] = True
-        
-        else:
-            grid_y[2][:] = True
-
-        #grid
-        for t in range(3):
-            for r in range(3):
-                grid_return[t][r] = grid_x and grid_y
-
+            print("No circles!")
+    else:
+        print("No contour!")
+    
     return grid_return
 
 
@@ -101,17 +114,18 @@ while True:
         elif last_contour is not None:
             cv2.drawContours(img, [last_contour], -1, (150,255,155), 3)
 
-
-    
     print_cricles(img, last_circles)
 
     k = cv2.waitKey(2)
 
     if k & 0xFF == ord('q'):
+        if grid is not None:
+            print(grid)
         break
 
     if k & 0xFF == ord('\r'):
         last_circles = find_circle(processed_img, img, last_circles)
+        grid = circle_position(last_circles, last_contour, img)
     
     cv2.imshow('image', img)
     cv2.imshow('edges', processed_img)

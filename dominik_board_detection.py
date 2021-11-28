@@ -13,13 +13,13 @@ def preprocess(img):
 
     return dillated_edges 
 
+
 def find_circle(processed_img, output_img, last_circles):
     rows = processed_img.shape[0]
     circles = cv2.HoughCircles(processed_img, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30,minRadius=10, maxRadius=100)
     
     if circles is not None:
         circles = np.uint16(np.around(circles))
-        last_circles = circles
 
         for i in circles[0, :]:
             center = (i[0], i[1])
@@ -33,7 +33,16 @@ def find_circle(processed_img, output_img, last_circles):
             cv2.circle(output_img, center, radius, (187, 206, 125), 3)
 
     return circles
-            
+
+
+def print_cricles(img, circles):
+    if circles is not None:
+        for i in circles[0, :]:
+            center = (i[0], i[1])
+            radius = i[2]
+            cv2.circle(img, center, radius, (187, 206, 125), 3)
+
+
 def circle_position(circles, cnt):
     grid_return = np.zeros((3,3), dtype=bool)
     grid_x = np.zeros((3,3), dtype=bool)
@@ -53,11 +62,12 @@ def circle_position(circles, cnt):
 
     for cr in circles[0, :]:
         (x, y) = (cr[0], cr[1])
+
         #grid_x
         if x <= leftup_x:
             grid_x[:][0] = True
         
-        elif x >= leftup_x and x <= rightup_x:
+        elif x >= leftup_x and x <= rightdown_x:
             grid_x[:][1] = True
         
         else:
@@ -73,17 +83,12 @@ def circle_position(circles, cnt):
         else:
             grid_y[2][:] = True
 
+        #grid
         for t in range(3):
             for r in range(3):
                 grid_return[t][r] = grid_x and grid_y
 
     return grid_return
-
-       
-                
-        
-
-
 
 
 vid = cv2.VideoCapture(0)
@@ -108,8 +113,10 @@ while True:
             cv2.drawContours(img, [last_contour], -1, (150,255,155), 3)
 
 
-    find_circle(processed_img, img, last_circles)
+    last_circles = find_circle(processed_img, img, last_circles)
     
+    print_cricles(img, last_circles)
+
     k = cv2.waitKey(2)
 
     if k & 0xFF == ord('q'):

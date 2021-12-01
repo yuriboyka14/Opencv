@@ -114,21 +114,6 @@ if __name__ == "__main__":
 
         contours, _ = cv2.findContours(processed_img, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
-        # --- experimenting with text --- #
-
-        # font = cv2.FONT_HERSHEY_SIMPLEX
-        # cv2.putText(img, 'X', (100, 650), font, 4, (200, 180, 100), 6, cv2.LINE_AA)  # [2][0]
-        # cv2.putText(img, 'X', (100, 400), font, 4, (200, 180, 100), 6, cv2.LINE_AA)  # [1][0]
-        # cv2.putText(img, 'X', (100, 150), font, 4, (200, 180, 100), 6, cv2.LINE_AA)  # [0][0]
-        # cv2.putText(img, 'X', (600, 650), font, 4, (200, 180, 100), 6, cv2.LINE_AA)  # [2][1]
-        # cv2.putText(img, 'X', (600, 400), font, 4, (200, 180, 100), 6, cv2.LINE_AA)  # [1][1]
-        # cv2.putText(img, 'X', (600, 150), font, 4, (200, 180, 100), 6, cv2.LINE_AA)  # [0][1]
-        # cv2.putText(img, 'X', (1100, 650), font, 4, (200, 180, 100), 6, cv2.LINE_AA)  # [2][2]
-        # cv2.putText(img, 'X', (1100, 400), font, 4, (200, 180, 100), 6, cv2.LINE_AA)  # [1][2]
-        # cv2.putText(img, 'X', (1100, 150), font, 4, (200, 180, 100), 6, cv2.LINE_AA)  # [0][2]
-
-        # --- experimenting with text - end --- #
-
         for c in contours:
             accuracy = 0.01 * cv2.arcLength(c, True)
             approx = cv2.approxPolyDP(c, accuracy, True)
@@ -148,15 +133,6 @@ if __name__ == "__main__":
         if k & 0xFF == ord('q'):
             if grid is not None:
                 print(f"Grid:\n {grid}")
-
-            # --- part to add -- #
-
-            # new_grid = Game(grid)
-            #
-            # if new_grid is not None:
-            #     print(f"Grid:\n {new_grid}")
-
-            # --- part to add - end --- #
 
             break
 

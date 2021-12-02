@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from game import Game, findBestMove
+from game import findBestMove
 
 
 def preprocess(img):
@@ -35,7 +35,7 @@ def print_cricles(img, circles):
             cv2.circle(img, center, radius, (187, 206, 125), 3)
 
 
-def circle_position(circles, cnt, img):
+def circle_and_x_position(circles, cnt, img, best_move_done):
     grid_return = np.zeros((3, 3), dtype=str)  # change to str from bool
     height = img.shape[1]
     xd = np.zeros((3, 3), dtype=bool)
@@ -87,10 +87,19 @@ def circle_position(circles, cnt, img):
                     for r in range(3):
                         grid_return[t][r] = grid_return[t][r] or (grid_x[t][r] and grid_y[t][r])
 
+
         else:
             print("No circles!")
     else:
         print("No contour!")
+
+    # --- added ---
+
+    # grid with x
+    if best_move_done:
+        for i in range(len(best_move_done)):  # this loops checks if the field is empty and x can be
+            if grid_return[best_move_done[i][0]][best_move_done[i][1]] == '':
+                grid_return[best_move_done[i][0]][best_move_done[i][1]] = 'x'
 
     return grid_return
 
@@ -129,6 +138,12 @@ if __name__ == "__main__":
 
         k = cv2.waitKey(2)
 
+        # --- added part ---
+
+        last_circles = find_circle(processed_img, img, last_circles)
+
+        # --- added part ---
+
 
         if k & 0xFF == ord('q'):
             if grid is not None:
@@ -136,21 +151,24 @@ if __name__ == "__main__":
 
             break
 
-
         if k & 0xFF == ord('\r'):
-            last_circles = find_circle(processed_img, img, last_circles)
-            grid = circle_position(last_circles, last_contour, img)
+            # last_circles = find_circle(processed_img, img, last_circles)
+            grid = circle_and_x_position(last_circles, last_contour, img, best_move_done)
 
             if grid is not None:            # glownie kminie w tej czesci co zrobic zeby pokazywalo x'a dopiero po
                 print(f"Grid:\n {grid}")    # znalezieniu kolejnego kola (no i zeby kola zapisywaly sie w gridzie)
-                new_grid = Game(grid)
-                best_move = findBestMove(grid)
-                best_move_done.append(best_move)
 
-            print(f"new Grid:\n {new_grid}")
+            best_move = findBestMove(grid)
+            # new_grid = Game(grid)
+            best_move_done.append(best_move)
+
+            # print(f"new Grid:\n {grid}")
 
         if best_move_done:
             for i in range(len(best_move_done)):
+                # print(f"general: {best_move_done}")
+                # print(f"row: {best_move_done[i][0]}")
+                # print(f"column: {best_move_done[i][1]}")
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 cv2.putText(img, 'X', (x_pos[best_move_done[i][0]][best_move_done[i][1]]), font, 4, (200, 180, 100), 6, cv2.LINE_AA)
                                         # here we pass the coordinates for displaying x

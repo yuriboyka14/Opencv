@@ -81,12 +81,16 @@ def circle_and_x_position(circles, cnt, img, best_move_done):
                     grid_y[2][:] = "o"
 
                 grid_x = np.rot90(grid_x)
+                grid_x = np.rot90(grid_x)
+                grid_x = np.rot90(grid_x)
 
                 # grid
                 for t in range(3):
                     for r in range(3):
                         grid_return[t][r] = grid_return[t][r] or (grid_x[t][r] and grid_y[t][r])
 
+                        # Position is not correct here - to be improved!
+                        # Grid coordinates don't match with the actual (videocap) coordinates
 
         else:
             print("No circles!")
@@ -97,7 +101,7 @@ def circle_and_x_position(circles, cnt, img, best_move_done):
 
     # grid with x
     if best_move_done:
-        for i in range(len(best_move_done)):  # this loops checks if the field is empty and x can be
+        for i in range(len(best_move_done)):  # this loop checks if the field is empty and x can be applied
             if grid_return[best_move_done[i][0]][best_move_done[i][1]] == '':
                 grid_return[best_move_done[i][0]][best_move_done[i][1]] = 'x'
 
@@ -111,11 +115,10 @@ if __name__ == "__main__":
     last_circles = None
 
     best_move_done = []     # array which will contain positions of computer player
-                            # it will be used to display the x
 
-    x_pos = [[(100, 150), (100, 400), (100, 650)],        # possible x positions (each square)
-               [(600, 150), (600, 400), (600, 650)],
-               [(1100, 150), (1100, 400), (1100, 650)]]
+    x_pos = [[(100, 150), (600, 150), (1100, 150)],        # possible x positions (each square)
+               [(100, 400), (600, 400), (1100, 400)],
+               [(100, 650), (600, 650), (1100, 650)]]
 
     while True:
         ret, img = vid.read()
@@ -145,24 +148,14 @@ if __name__ == "__main__":
         # --- added part ---
 
 
-        if k & 0xFF == ord('q'):
+        if k & 0xFF == ord('\r'):
+            grid = circle_and_x_position(last_circles, last_contour, img, best_move_done)
+
             if grid is not None:
                 print(f"Grid:\n {grid}")
 
-            break
-
-        if k & 0xFF == ord('\r'):
-            # last_circles = find_circle(processed_img, img, last_circles)
-            grid = circle_and_x_position(last_circles, last_contour, img, best_move_done)
-
-            if grid is not None:            # glownie kminie w tej czesci co zrobic zeby pokazywalo x'a dopiero po
-                print(f"Grid:\n {grid}")    # znalezieniu kolejnego kola (no i zeby kola zapisywaly sie w gridzie)
-
             best_move = findBestMove(grid)
-            # new_grid = Game(grid)
             best_move_done.append(best_move)
-
-            # print(f"new Grid:\n {grid}")
 
         if best_move_done:
             for i in range(len(best_move_done)):
@@ -173,6 +166,12 @@ if __name__ == "__main__":
                 cv2.putText(img, 'X', (x_pos[best_move_done[i][0]][best_move_done[i][1]]), font, 4, (200, 180, 100), 6, cv2.LINE_AA)
                                         # here we pass the coordinates for displaying x
                                         # in one of the available squares (depends on the best move)
+
+        if k & 0xFF == ord('q'):
+            if grid is not None:
+                print(f"Grid:\n {grid}")
+
+            break
 
 
         cv2.imshow('image', img)

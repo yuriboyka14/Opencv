@@ -18,40 +18,36 @@ def isMovesLeft(board):
 def evaluate(b):
     # Checking for Rows for X or O victory.
     for row in range(3):
-        if b[row][0] == b[row][1] and b[row][1] == b[row][2]:
-            if b[row][0] == player:
-                print(f"Player wins")
-                return 10
-            elif b[row][0] == opponent:
-                print(f"Opponent wins")
-                return -10
+        if b[row][0] == b[row][1] == b[row][2] == player:
+            print(f"Player wins")
+            return 10
+        elif b[row][0] == b[row][1] == b[row][2] == opponent:
+            print(f"Opponent wins")
+            return -10
 
     # Checking for Columns for X or O victory.
     for col in range(3):
-        if b[0][col] == b[1][col] and b[1][col] == b[2][col]:
-            if b[0][col] == player:
-                print(f"Player wins")
-                return 10
-            elif b[0][col] == opponent:
-                print(f"Opponent wins")
-                return -10
+        if b[0][col] == b[1][col] == b[2][col] == player:
+            print(f"Player wins")
+            return 10
+        elif b[0][col] == b[1][col] == b[2][col] == opponent:
+            print(f"Opponent wins")
+            return -10
 
     # Checking for Diagonals for X or O victory.
-    if b[0][0] == b[1][1] and b[1][1] == b[2][2]:
-        if b[0][0] == player:
-            print(f"Player wins")
-            return 10
-        elif b[0][0] == opponent:
-            print(f"Opponent wins")
-            return -10
+    if b[0][0] == b[1][1] == b[2][2] == player:
+        print(f"Player wins")
+        return 10
+    elif b[0][0] == b[1][1] == b[2][2] == opponent:
+        print(f"Opponent wins")
+        return -10
 
-    if b[0][2] == b[1][1] and b[1][1] == b[2][0]:
-        if b[0][2] == player:
-            print(f"Player wins")
-            return 10
-        elif b[0][2] == opponent:
-            print(f"Opponent wins")
-            return -10
+    if b[0][2] == b[1][1] == b[2][0] == player:
+        print(f"Player wins")
+        return 10
+    elif b[0][2] == b[1][1] == b[2][0] == opponent:
+        print(f"Opponent wins")
+        return -10
 
     # Else if none of them have won then return 0
     return 0

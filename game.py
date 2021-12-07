@@ -155,15 +155,3 @@ def findBestMove(board):
     return bestMove
 
 
-# def Game(grid):                         # probably redundant function
-#
-#     best_move = findBestMove(grid)
-#     print(f"best move: {best_move}")
-#
-#     print(f"Position for the best move - Row: {best_move[0]}, Column: {best_move[1]}")
-#
-#     grid[best_move[0]][best_move[1]] = 'x'
-#
-#     return grid
-
-

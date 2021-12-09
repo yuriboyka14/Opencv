@@ -18,8 +18,8 @@ def preprocess(img):
 
 def find_circle(processed_img, output_img, last_circles):
     rows = processed_img.shape[0]
-    circles = cv2.HoughCircles(processed_img, cv2.HOUGH_GRADIENT, 1, rows / 8, param1=100, param2=30, minRadius=10,
-                               maxRadius=100)
+    circles = cv2.HoughCircles(processed_img, cv2.HOUGH_GRADIENT, 1, rows / 8, param1=100, param2=30, minRadius=5,
+                               maxRadius=150)
 
     if circles is not None:
         circles = np.uint16(np.around(circles))
@@ -35,62 +35,88 @@ def print_cricles(img, circles):
             cv2.circle(img, center, radius, (187, 206, 125), 3)
 
 
-def circle_and_x_position(circles, cnt, img, best_move_done):
-    grid_return = np.zeros((3, 3), dtype=str)  # change to str from bool
-    height = img.shape[1]
-    xd = np.zeros((3, 3), dtype=bool)
+def circle_and_x_position(circles, cnt, best_move_done):
+    grid_return = np.zeros((3, 3), dtype=str)
+    bnd_x, bnd_y, bnd_w, bnd_h = cv2.boundingRect(cnt)
 
     if cnt is not None:
         if circles is not None:
-            leftup_x = cnt[3][0][0]
-            leftup_y = cnt[3][0][1]
-
-            rightup_x = cnt[0][0][0]
-            rightup_y = cnt[0][0][1]
-
-            leftdown_x = cnt[2][0][0]
-            leftdown_y = cnt[2][0][1]
-
-            rightdown_x = cnt[1][0][0]
-            rightdown_y = cnt[1][0][1]
+            leftup_x = bnd_x
+            rightup_y = bnd_y
+            leftdown_y = bnd_y+bnd_h
+            rightdown_x = bnd_x+bnd_w
 
             for cr in circles[0, :]:
                 (x, y) = (cr[0], cr[1])
 
-                grid_x = np.zeros((3, 3), dtype=str)   # change to str from bool
-                grid_y = np.zeros((3, 3), dtype=str)   # change to str from bool
+                # grid_x = np.zeros((3, 3), dtype=str)
+                # grid_y = np.zeros((3, 3), dtype=str)
+                #
+                # # grid_x
+                # if x < leftup_x:
+                #     grid_x[:][0] = "o"
+                #
+                # elif leftup_x <= x < rightdown_x:
+                #     grid_x[:][1] = "o"
+                #
+                # else:
+                #     grid_x[:][2] = "o"
+                #
+                # # grid_y
+                # if y > leftdown_y:
+                #     grid_y[0][:] = "o"
+                #
+                # elif leftdown_y >= y > rightup_y:
+                #     grid_y[1][:] = "o"
+                #
+                # else:
+                #     grid_y[2][:] = "o"
+                #
+                # grid_x = np.rot90(grid_x)
+                #
+                # print(f"grid x : {grid_x}")
+                # print(f"grid y : {grid_y}")
 
-                # grid_x
-                if x < leftup_x:
-                    grid_x[:][0] = "o"
+                # my code
 
-                elif leftup_x <= x < rightdown_x:
-                    grid_x[:][1] = "o"
+                # first column
+                if x < leftup_x and y > rightup_y:
+                    grid_return[0][0] = "o"
 
-                else:
-                    grid_x[:][2] = "o"
+                elif x < leftup_x and leftdown_y < y <= rightup_y:
+                    grid_return[1][0] = "o"
 
-                # grid_y
-                if y > leftdown_y:
-                    grid_y[0][:] = "o"
+                elif x < leftup_x and y < leftdown_y:
+                    grid_return[2][0] = "o"
 
-                elif leftdown_y >= y > rightup_y:
-                    grid_y[1][:] = "o"
+                # second column
+                elif rightdown_x > x >= leftup_x and y > rightup_y:
+                    grid_return[0][1] = "o"
 
-                else:
-                    grid_y[2][:] = "o"
+                elif rightdown_x > x >= leftup_x and leftdown_y < y <= rightup_y:
+                    grid_return[1][1] = "o"
 
-                grid_x = np.rot90(grid_x)
-                grid_x = np.rot90(grid_x)
-                grid_x = np.rot90(grid_x)
+                elif rightdown_x > x >= leftup_x and y < leftdown_y:
+                    grid_return[2][1] = "o"
+
+                # third column
+                elif rightdown_x <= x and y > rightup_y:
+                    grid_return[0][2] = "o"
+
+                elif rightdown_x <= x and leftdown_y < y <= rightup_y:
+                    grid_return[1][2] = "o"
+
+                elif rightdown_x <= x and y < leftdown_y:
+                    grid_return[2][2] = "o"
+
+                # my code end
+
 
                 # grid
                 for t in range(3):
                     for r in range(3):
-                        grid_return[t][r] = grid_return[t][r] or (grid_x[t][r] and grid_y[t][r])
+                        grid_return[t][r] = grid_return[t][r] #or (grid_x[t][r] and grid_y[t][r])
 
-                        # Position is not correct here - to be improved!
-                        # Grid coordinates don't match with the actual (videocap) coordinates
 
         else:
             print("No circles!")
@@ -141,15 +167,10 @@ if __name__ == "__main__":
 
         k = cv2.waitKey(2)
 
-        # --- added part ---
-
         last_circles = find_circle(processed_img, img, last_circles)
 
-        # --- added part ---
-
-
         if k & 0xFF == ord('\r'):
-            grid = circle_and_x_position(last_circles, last_contour, img, best_move_done)
+            grid = circle_and_x_position(last_circles, last_contour, best_move_done)
 
             if grid is not None:
                 print(f"Grid:\n {grid}")
@@ -159,9 +180,6 @@ if __name__ == "__main__":
 
         if best_move_done:
             for i in range(len(best_move_done)):
-                # print(f"general: {best_move_done}")
-                # print(f"row: {best_move_done[i][0]}")
-                # print(f"column: {best_move_done[i][1]}")
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 cv2.putText(img, 'X', (x_pos[best_move_done[i][0]][best_move_done[i][1]]), font, 4, (200, 180, 100), 6, cv2.LINE_AA)
                                         # here we pass the coordinates for displaying x

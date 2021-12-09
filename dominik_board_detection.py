@@ -15,43 +15,43 @@ def preprocess(img):
 
 
 def check_cricles(new_crc, old_crc):
-    th = 30
-    print("x")
-    for new in new_crc[0, :]:
-        for old in old_crc[0, :]:
-            if new[0] in range(old[0]-th, old[0]+th) or new[1] in range(old[1]-th, old[1]+th):
-                continue
-            else:
-                old = new
+    th = 10
+ 
+    if old_crc is not None:
+        for index_new, new in enumerate(new_crc[0, :]):
+            for index_old, old in enumerate(old_crc[0, :]):
+                if new[0] in range(old[0]-th, old[0]+th) and new[1] in range(old[1]-th, old[1]+th):
+                    continue
+                else:
+                    old_crc[0, index_old] = new_crc[0, index_new]
 
-    return old_crc
+        return old_crc
 
-def find_circle(processed_img, output_img, last_circles):
+    else:
+        return new_crc
+
+def find_circle(processed_img, last_circles):
     rows = processed_img.shape[0]
     circles = cv2.HoughCircles(processed_img, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30,minRadius=10, maxRadius=100)
 
     if circles is not None:
         circles = np.uint16(np.around(circles))
-        print("nowe:")
-        print(circles)
-        print("stare:")
-        print(last_circles)
-        if last_circles is not None:
-            circles = check_cricles(circles, last_circles)
+        circles = check_cricles(circles, last_circles)
         return circles
+
+    return last_circles
 
 def print_cricles(img, circles):
     if circles is not None:
         for i in circles[0, :]:
             center = (i[0], i[1])
-            radius = i[2]
+            radius = 30 
             cv2.circle(img, center, radius, (187, 206, 125), 3)
 
 
 def circle_position(circles, cnt):
     grid_return = np.zeros((3,3), dtype=bool)
     bnd_x,bnd_y,bnd_w,bnd_h = cv2.boundingRect(cnt)
-
 
     if cnt is not None:
         if circles is not None:
@@ -86,7 +86,7 @@ def circle_position(circles, cnt):
                 else:
                     grid_y[2][:] = True
 
-                grid_x = np.rot90(grid_x)
+                # grid_x = np.rot90(grid_x)
 
                 #grid
                 for t in range(3):
@@ -124,7 +124,7 @@ while True:
         elif last_contour is not None:
             cv2.drawContours(img, [last_contour], -1, (150,255,155), 3)
 
-    last_circles = find_circle(processed_img, img, last_circles)
+    last_circles = find_circle(processed_img, last_circles)
     print_cricles(img, last_circles)
 
     k = cv2.waitKey(50)

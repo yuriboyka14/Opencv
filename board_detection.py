@@ -41,10 +41,10 @@ def circle_and_x_position(circles, cnt, best_move_done):
 
     if cnt is not None:
         if circles is not None:
-            leftup_x = bnd_x
-            rightup_y = bnd_y
-            leftdown_y = bnd_y+bnd_h
-            rightdown_x = bnd_x+bnd_w
+            left_x = bnd_x
+            up_y = bnd_y
+            down_y = bnd_y+bnd_h
+            right_x = bnd_x+bnd_w
 
             for cr in circles[0, :]:
                 (x, y) = (cr[0], cr[1])
@@ -80,34 +80,37 @@ def circle_and_x_position(circles, cnt, best_move_done):
                 # my code
 
                 # first column
-                if x < leftup_x and y > rightup_y:
+                if x < left_x and y < up_y:
                     grid_return[0][0] = "o"
 
-                elif x < leftup_x and leftdown_y < y <= rightup_y:
+                elif x < left_x and down_y > y >= up_y:
                     grid_return[1][0] = "o"
 
-                elif x < leftup_x and y < leftdown_y:
+                elif x < left_x and y > down_y:
                     grid_return[2][0] = "o"
 
                 # second column
-                elif rightdown_x > x >= leftup_x and y > rightup_y:
+                elif right_x > x >= left_x and y < up_y:
                     grid_return[0][1] = "o"
 
-                elif rightdown_x > x >= leftup_x and leftdown_y < y <= rightup_y:
+                elif right_x > x >= left_x and down_y > y >= up_y:
                     grid_return[1][1] = "o"
 
-                elif rightdown_x > x >= leftup_x and y < leftdown_y:
+                elif right_x > x >= left_x and y > down_y:
                     grid_return[2][1] = "o"
 
                 # third column
-                elif rightdown_x <= x and y > rightup_y:
+                elif right_x <= x and y < up_y:
                     grid_return[0][2] = "o"
 
-                elif rightdown_x <= x and leftdown_y < y <= rightup_y:
+                elif right_x <= x and down_y > y >= up_y:
                     grid_return[1][2] = "o"
 
-                elif rightdown_x <= x and y < leftdown_y:
+                elif right_x <= x and y > down_y:
                     grid_return[2][2] = "o"
+
+                else:
+                    continue
 
                 # my code end
 
@@ -115,7 +118,7 @@ def circle_and_x_position(circles, cnt, best_move_done):
                 # grid
                 for t in range(3):
                     for r in range(3):
-                        grid_return[t][r] = grid_return[t][r] #or (grid_x[t][r] and grid_y[t][r])
+                        grid_return[t][r] = grid_return[t][r]
 
 
         else:
@@ -125,7 +128,7 @@ def circle_and_x_position(circles, cnt, best_move_done):
 
     # --- added ---
 
-    # grid with x
+    # grid with x's
     if best_move_done:
         for i in range(len(best_move_done)):  # this loop checks if the field is empty and x can be applied
             if grid_return[best_move_done[i][0]][best_move_done[i][1]] == '':

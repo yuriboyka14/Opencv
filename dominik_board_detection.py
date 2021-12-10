@@ -16,32 +16,33 @@ def preprocess(img):
     return dillated_edges 
 
 
-def check_cricles(new_crc, old_crc):
+def check_cricles(new_circles, prev_circles):
     th = 10
- 
-    if old_crc is not None:
-        for index_new, new in enumerate(new_crc[0, :]):
-            for index_old, old in enumerate(old_crc[0, :]):
+    if prev_circles is not None:
+        for index_new, new in enumerate(new_circles[0, :]):
+            for index_old, old in enumerate(prev_circles[0, :]):
                 if new[0] in range(old[0]-th, old[0]+th) and new[1] in range(old[1]-th, old[1]+th):
                     continue
                 else:
-                    old_crc[0, index_old] = new_crc[0, index_new]
-
-        return old_crc
+                    prev_circles[0, index_old] =  new_circles[0, index_new]
+        print(f"$$$$$$$$$ prev circle\n{prev_circles}")
+        return prev_circles
 
     else:
-        return new_crc
+        print(f"$$$$$$$$$ new circle\n{new_circles}")
+        return new_circles
 
-def find_circle(processed_img, last_circles):
+
+def find_circle(processed_img, prev_circles):
     rows = processed_img.shape[0]
     circles = cv2.HoughCircles(processed_img, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30,minRadius=10, maxRadius=100)
 
     if circles is not None:
         circles = np.uint16(np.around(circles))
-        # circles = check_cricles(circles, last_circles)
         return circles
 
-    return last_circles
+    return prev_circles
+
 
 def print_cricles(img, circles):
     if circles is not None:
@@ -52,7 +53,7 @@ def print_cricles(img, circles):
 
 
 def circle_position(circles, cnt):
-    grid_return = np.zeros((3,3), dtype=bool)
+    grid_return = np.zeros((3,3), dtype=str)
     bnd_x,bnd_y,bnd_w,bnd_h = cv2.boundingRect(cnt)
 
     if cnt is not None:
@@ -99,6 +100,7 @@ def circle_position(circles, cnt):
     
     return grid_return
 
+
 def find_print_contour(src, dst, prev_contour):
     contours, _ = cv2.findContours(src, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
@@ -115,11 +117,27 @@ def find_print_contour(src, dst, prev_contour):
         return prev_contour
 
 
+def grid_print(img, grid, cnt):
+    x,y,w,h = cv2.boundingRect(cnt)
+    
+    positions = [[(0.5*x, 0.5*y), (x+0.5*w, 0.5*y), (1.5*x+w, 0.5*y)],
+                 [(0.5*x, y+0.5*h), (x+0.5*w, y+0.5*h), (1.5*x+w, y+0.5*h)],
+                 [(0.5*x, 1.5*y+h), (x+0.5*w, 1.5*y+h), (1.5*x+w, 1.5*y+h)]]
+
+    for i in range(3):
+        for j in range(3):
+            if grid[i][j] == 'o':
+                cv2.circle(img, (int(positions[i][j][0]), int(positions[i][j][1])), 30, (43, 107, 217), 3)
+
+
+# main
 vid = cv2.VideoCapture(0)
 
 contour = None
-last_circles = None
+circles = None
+
 grid = None
+
 
 while True:
     ret, img = vid.read()
@@ -127,8 +145,8 @@ while True:
 
     contour = find_print_contour(edges, img, contour)
 
-    last_circles = find_circle(edges, last_circles)
-    print_cricles(img, last_circles)
+    circles = find_circle(edges, circles)
+    print_cricles(img, circles)
 
     k = cv2.waitKey(50)
 
@@ -136,9 +154,12 @@ while True:
         if grid is not None:
             print(grid)
         break
+    
+    if grid is not None:
+        grid_print(img, grid, contour)
 
     if k & 0xFF == ord('\r'):
-        grid = circle_position(last_circles, contour)
+        grid = circle_position(circles, contour)
         print(grid)
  
     cv2.imshow('image', img)

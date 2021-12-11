@@ -16,23 +16,6 @@ def preprocess(img):
     return dillated_edges 
 
 
-def check_cricles(new_circles, prev_circles):
-    th = 10
-    if prev_circles is not None:
-        for index_new, new in enumerate(new_circles[0, :]):
-            for index_old, old in enumerate(prev_circles[0, :]):
-                if new[0] in range(old[0]-th, old[0]+th) and new[1] in range(old[1]-th, old[1]+th):
-                    continue
-                else:
-                    prev_circles[0, index_old] =  new_circles[0, index_new]
-        print(f"$$$$$$$$$ prev circle\n{prev_circles}")
-        return prev_circles
-
-    else:
-        print(f"$$$$$$$$$ new circle\n{new_circles}")
-        return new_circles
-
-
 def find_circle(processed_img, prev_circles):
     rows = processed_img.shape[0]
     circles = cv2.HoughCircles(processed_img, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30,minRadius=10, maxRadius=100)
@@ -129,7 +112,7 @@ def grid_print(img, grid, cnt):
             if grid[i][j] == 'o':
                 cv2.circle(img, (int(positions[i][j][0]), int(positions[i][j][1])), 30, (43, 107, 217), 3)
 
-            if grid[i][j] == 'o':
+            if grid[i][j] == 'x':
                 cv2.drawMarker(img, (int(positions[i][j][0]), int(positions[i][j][1])), (90, 30, 30), cv2.MARKER_TILTED_CROSS, thickness=4, markerSize = 40)
 
 

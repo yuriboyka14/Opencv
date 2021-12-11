@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from game import Game
 
 
 def preprocess(img):
@@ -118,7 +119,7 @@ def grid_print(img, grid, cnt):
                 cv2.circle(img, (int(positions[i][j][0]), int(positions[i][j][1])), 30, (43, 107, 217), 3)
 
             if grid[i][j] == 'x':
-                cv2.drawMarker(img, (int(positions[i][j][0]), int(positions[i][j][1])), (90, 30, 30), cv2.MARKER_TILTED_CROSS, thickness=4, markerSize = 40)
+                cv2.drawMarker(img, (int(positions[i][j][0]), int(positions[i][j][1])), (103, 200, 240), cv2.MARKER_TILTED_CROSS, thickness=5, markerSize = 44)
 
 
 # main
@@ -143,6 +144,7 @@ while True:
 
     if k & 0xFF == ord('q'):
         if grid is not None:
+            print("\n")
             print(grid)
         break
     
@@ -151,7 +153,14 @@ while True:
 
     if k & 0xFF == ord('\r'):
         grid = circle_position(circles, contour, grid)
+        print("\n")
         print(grid)
+
+    if k & 0xFF == ord(' '):
+        if grid is not None:
+            grid = Game(grid)
+            print("\n")
+            print(grid)
 
     if k & 0xFF == ord('r'): #reset
         grid = None
@@ -159,7 +168,6 @@ while True:
         contour = None
  
     cv2.imshow('image', img)
-    cv2.imshow('edges', edges)
         
 vid.release()
 cv2.destroyAllWindows()

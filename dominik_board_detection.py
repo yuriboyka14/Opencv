@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 def preprocess(img):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     ret, gray = cv2.threshold(gray, 80, 230, cv2.THRESH_BINARY)
@@ -35,8 +36,12 @@ def print_cricles(img, circles):
             cv2.circle(img, center, radius, (187, 206, 125), 3)
 
 
-def circle_position(circles, cnt):
-    grid_return = np.zeros((3,3), dtype=str)
+def circle_position(circles, cnt, grid):
+    if grid is None:
+        grid_return = np.zeros((3,3), dtype=str)
+    else:
+        grid_return = grid
+
     bnd_x,bnd_y,bnd_w,bnd_h = cv2.boundingRect(cnt)
 
     if cnt is not None:
@@ -145,7 +150,7 @@ while True:
         grid_print(img, grid, contour)
 
     if k & 0xFF == ord('\r'):
-        grid = circle_position(circles, contour)
+        grid = circle_position(circles, contour, grid)
         print(grid)
 
     if k & 0xFF == ord('r'): #reset

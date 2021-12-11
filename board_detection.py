@@ -34,6 +34,17 @@ def print_cricles(img, circles):
             radius = i[2]
             cv2.circle(img, center, radius, (187, 206, 125), 3)
 
+def grid_return(grid, new_o, new_x):
+    if new_o:                                   # plan is to update here the grid with new circles and x's created
+        for o in new_o:                         # in the circle_and_x_position. (TO BE IMPROVED)
+            grid[new_o[0]][new_o[1]] = "o"
+
+    if new_x:
+        for x in new_x:
+            grid[new_x[0]][new_x[1]] = "o"
+
+    return grid
+
 
 def circle_and_x_position(circles, cnt, best_move_done):
     grid_return = np.zeros((3, 3), dtype=str)
@@ -178,8 +189,12 @@ if __name__ == "__main__":
             if grid is not None:
                 print(f"Grid:\n {grid}")
 
-            best_move = findBestMove(grid)
-            best_move_done.append(best_move)
+            best_move = findBestMove(grid)                  # if statement added to avoid putting x's on the places
+            if grid[best_move[0]][best_move[1]] == '':      # with o's already there
+                best_move_done.append(best_move)
+            else:
+                continue
+
 
         if best_move_done:
             for i in range(len(best_move_done)):

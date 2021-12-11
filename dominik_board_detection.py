@@ -129,8 +129,8 @@ def grid_print(img, grid, cnt):
             if grid[i][j] == 'o':
                 cv2.circle(img, (int(positions[i][j][0]), int(positions[i][j][1])), 30, (43, 107, 217), 3)
 
-            if grid[i][j] == 'x':
-                cv2.drawMarker(img, (int(positions[i][j][0]), int(positions[i][j][1])), (0, 0, 255), cv2.MARKER_TILTED_CROSS, thickness=3, markerSize = 30)
+            if grid[i][j] == 'o':
+                cv2.drawMarker(img, (int(positions[i][j][0]), int(positions[i][j][1])), (90, 30, 30), cv2.MARKER_TILTED_CROSS, thickness=4, markerSize = 40)
 
 
 # main

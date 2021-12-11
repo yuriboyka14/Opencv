@@ -39,8 +39,8 @@ def grid_return(grid, new_o, new_x):
         for o in new_o:                         # in the circle_and_x_position. (TO BE IMPROVED)
             grid[new_o[0]][new_o[1]] = "o"
 
-    if new_x:
-        for x in new_x:
+    if new_x:                                   # plan taki byl ale juz nieistotne bo zostalo to zrobione na innym
+        for x in new_x:                         # branchu
             grid[new_x[0]][new_x[1]] = "o"
 
     return grid

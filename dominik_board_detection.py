@@ -129,6 +129,9 @@ def grid_print(img, grid, cnt):
             if grid[i][j] == 'o':
                 cv2.circle(img, (int(positions[i][j][0]), int(positions[i][j][1])), 30, (43, 107, 217), 3)
 
+            if grid[i][j] == 'x':
+                cv2.drawMarker(img, (int(positions[i][j][0]), int(positions[i][j][1])), (0, 0, 255), cv2.MARKER_TILTED_CROSS, thickness=3, markerSize = 30)
+
 
 # main
 vid = cv2.VideoCapture(0)
@@ -161,6 +164,11 @@ while True:
     if k & 0xFF == ord('\r'):
         grid = circle_position(circles, contour)
         print(grid)
+
+    if k & 0xFF == ord('r'): #reset
+        grid = None
+        circles = None
+        contour = None
  
     cv2.imshow('image', img)
     cv2.imshow('edges', edges)

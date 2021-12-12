@@ -12,7 +12,7 @@ def preprocess(img):
     blur = gray
 
     edges = cv2.Canny(blur, 40, 170)
-    dillated_edges = cv2.dilate(edges.copy(), None, iterations = 5)
+    dillated_edges = cv2.dilate(edges.copy(), None, iterations=5)
     dillated_edges = cv2.morphologyEx(dillated_edges, cv2.MORPH_CLOSE, np.ones((8,8),np.uint8))
 
     return dillated_edges 
@@ -20,7 +20,8 @@ def preprocess(img):
 
 def find_circle(processed_img, prev_circles):
     rows = processed_img.shape[0]
-    circles = cv2.HoughCircles(processed_img, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30,minRadius=10, maxRadius=100)
+    circles = cv2.HoughCircles(processed_img, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30, minRadius=5,
+                               maxRadius=150)
 
     if circles is not None:
         circles = np.uint16(np.around(circles))
@@ -98,7 +99,7 @@ def find_print_contour(src, dst, prev_contour):
         approx = cv2.approxPolyDP(c, accuracy, True)
         
         if len(approx) == 4 and cv2.contourArea(approx) > 15000:   
-            cv2.drawContours(dst, [approx], -1, (120,255,155), 10)
+            cv2.drawContours(dst, [approx], -1, (120, 255, 155), 10)
             return approx
         
     if prev_contour is not None:
@@ -119,55 +120,64 @@ def grid_print(img, grid, cnt):
                 cv2.circle(img, (int(positions[i][j][0]), int(positions[i][j][1])), 30, (43, 107, 217), 3)
 
             if grid[i][j] == 'x':
-                cv2.drawMarker(img, (int(positions[i][j][0]), int(positions[i][j][1])), (103, 200, 240), cv2.MARKER_TILTED_CROSS, thickness=5, markerSize = 44)
+                cv2.drawMarker(img, (int(positions[i][j][0]), int(positions[i][j][1])), (103, 200, 240),
+                               cv2.MARKER_TILTED_CROSS, thickness=5, markerSize=44)
 
 
-# main
-vid = cv2.VideoCapture(0)
+if __name__ == "__main__":
+    vid = cv2.VideoCapture(0)
 
-contour = None
-circles = None
+    contour = None
+    circles = None
 
-grid = None
+    grid = None
 
 
-while True:
-    ret, img = vid.read()
-    edges = preprocess(img)
+    while True:
+        ret, img = vid.read()
+        edges = preprocess(img)
 
-    contour = find_print_contour(edges, img, contour)
+        contour = find_print_contour(edges, img, contour)
 
-    circles = find_circle(edges, circles)
-    print_cricles(img, circles)
+        circles = find_circle(edges, circles)
+        print_cricles(img, circles)
 
-    k = cv2.waitKey(50)
+        k = cv2.waitKey(50)
 
-    if k & 0xFF == ord('q'):
+        if k & 0xFF == ord('q'):
+            if grid is not None:
+                print("\n")
+                print(grid)
+            break
+
         if grid is not None:
-            print("\n")
-            print(grid)
-        break
-    
-    if grid is not None:
-        grid_print(img, grid, contour)
+            grid_print(img, grid, contour)
 
-    if k & 0xFF == ord('\r'):
-        grid = circle_position(circles, contour, grid)
-        print("\n")
-        print(grid)
-
-    if k & 0xFF == ord(' '):
-        if grid is not None:
-            grid = Game(grid)
+        if k & 0xFF == ord('\r'):
+            grid = circle_position(circles, contour, grid)
             print("\n")
             print(grid)
 
-    if k & 0xFF == ord('r'): #reset
-        grid = None
-        circles = None
-        contour = None
- 
-    cv2.imshow('image', img)
-        
-vid.release()
-cv2.destroyAllWindows()
+        if k & 0xFF == ord(' '):
+            if grid is not None:
+                grid, score, isFinished, winner = Game(grid)
+                print("\n")
+                print(grid)
+                if isFinished:
+                    print("Game finished")
+                    if winner:
+                        print(f"{winner} wins!")
+                        break
+                    else:
+                        print("Tie!")
+                        break
+
+        if k & 0xFF == ord('r'):  # reset
+            grid = None
+            circles = None
+            contour = None
+
+        cv2.imshow('image', img)
+
+    vid.release()
+    cv2.destroyAllWindows()

@@ -1,167 +1,117 @@
-# Python3 program to find the next optimal move for a player
-player, opponent = 'o', 'x'
+ai, human = 'x', 'o'
 
 
-# This function returns true if there are moves
-# remaining on the board. It returns false if
-# there are no moves left to play.
-def isMovesLeft(board):
+def isMovesLeft(grid):
     for i in range(3):
         for j in range(3):
-            if board[i][j] == '':
+            if grid[i][j] == '':
                 return True
     return False
 
 
-# This is the evaluation function as discussed
-# in the previous article ( http://goo.gl/sJgv68 )
-def evaluate(b):
-    # Checking for Rows for X or O victory.
-    for row in range(3):
-        if b[row][0] == b[row][1] == b[row][2] == player:
-            # print(f"Player wins")
-            return 10
-        elif b[row][0] == b[row][1] == b[row][2] == opponent:
-            # print(f"Opponent wins")
-            return -10
+def evaluate(grid):
+    for row in range(3):                                                  # checking rows for win
+        if grid[row][0] == grid[row][1] == grid[row][2]:
+            if grid[row][0] == ai:
+                return 1
+        if grid[row][0] == grid[row][1] == grid[row][2]:
+            if grid[row][0] == human:
+                return -1
 
-    # Checking for Columns for X or O victory.
-    for col in range(3):
-        if b[0][col] == b[1][col] == b[2][col] == player:
-            # print(f"Player wins")
-            return 10
-        elif b[0][col] == b[1][col] == b[2][col] == opponent:
-            # print(f"Opponent wins")
-            return -10
+    for col in range(3):                                                  # checking colums for win
+        if grid[0][col] == grid[1][col] == grid[2][col]:
+            if grid[0][col] == ai:
+                return 1
+        if grid[0][col] == grid[1][col] == grid[2][col]:
+            if grid[0][col] == human:
+                return -1
 
-    # Checking for Diagonals for X or O victory.
-    if b[0][0] == b[1][1] == b[2][2] == player:
-        # print(f"Player wins")
-        return 10
-    elif b[0][0] == b[1][1] == b[2][2] == opponent:
-        # print(f"Opponent wins")
-        return -10
+    if grid[0][0] == grid[1][1] == grid[2][2]:                            # checking diagonals for win
+        if grid[0][0] == ai:
+            return 1
+    if grid[0][0] == grid[1][1] == grid[2][2]:
+        if grid[0][0] == human:
+            return -1
 
-    if b[0][2] == b[1][1] == b[2][0] == player:
-        # print(f"Player wins")
-        return 10
-    elif b[0][2] == b[1][1] == b[2][0] == opponent:
-        # print(f"Opponent wins")
-        return -10
+    if grid[0][2] == grid[1][1] == grid[2][0]:
+        if grid[0][2] == ai:
+            return 1
+    if grid[0][2] == grid[1][1] == grid[2][0]:
+        if grid[0][2] == human:
+            return -1
 
-    # Else if none of them have won then return 0
-    return 0
+    return 0                                                               # not finished or tie
 
 
-# This is the minimax function. It considers all
-# the possible ways the game can go and returns
-# the value of the board
-def minimax(board, depth, isMax):
-    score = evaluate(board)
+def minimax(grid, depth, isMax):
+    score = evaluate(grid)
 
-    # If Maximizer has won the game return his/her
-    # evaluated score
-    if score == 10:
-        return score
+    if score == 0:
+        if not isMovesLeft(grid):
+            return score                                        # tie
+    elif score == 1 or score == -1:
+        return score                                            # either 1 (ai win) or -1 (human win)
 
-    # If Minimizer has won the game return his/her
-    # evaluated score
-    if score == -10:
-        return score
-
-    # If there are no more moves and no winner then
-    # it is a tie
-    if not isMovesLeft(board):
-        return 0
-
-    # If this maximizer's move
     if isMax:
-        best = -1000
+        best_score = -1000000
+        for row in range(3):
+            for col in range(3):
+                if grid[row][col] == '':
+                    grid[row][col] = ai
+                    score = minimax(grid, depth + 1, False)    # false is here since we check the possibilities of
+                    grid[row][col] = ''                        # the next move (human move). We are on another depth
+                    best_score = max(score, best_score)
+        return best_score
 
-        # Traverse all cells
-        for i in range(3):
-            for j in range(3):
-
-                # Check if cell is empty
-                if board[i][j] == '':
-                    # Make the move
-                    board[i][j] = player
-
-                    # Call minimax recursively and choose
-                    # the maximum value
-                    best = max(best, minimax(board,
-                                             depth + 1,
-                                             not isMax))
-
-                    # Undo the move
-                    board[i][j] = ''
-        return best
-
-    # If this minimizer's move
     else:
-        best = 1000
-
-        # Traverse all cells
-        for i in range(3):
-            for j in range(3):
-
-                # Check if cell is empty
-                if board[i][j] == '':
-                    # Make the move
-                    board[i][j] = opponent
-
-                    # Call minimax recursively and choose
-                    # the minimum value
-                    best = min(best, minimax(board, depth + 1, not isMax))
-
-                    # Undo the move
-                    board[i][j] = ''
-        return best
+        best_score = 1000000
+        for row in range(3):
+            for col in range(3):
+                if grid[row][col] == '':
+                    grid[row][col] = human
+                    score = minimax(grid, depth + 1, True)     # analogically here with true - now is minimizing move
+                    grid[row][col] = ''                        # and we want to check one after it
+                    best_score = min(score, best_score)
+        return best_score
 
 
-# This will return the best possible move for the player
-def findBestMove(board):
-    bestVal = -1000
-    bestMove = (-1, -1)
+def findBestMove(grid):
+    best_move = None
+    best_score = -1000000
+    for row in range(3):
+        for col in range(3):
+            if grid[row][col] == '':
+                grid[row][col] = ai
+                score = minimax(grid, 0, False)
+                grid[row][col] = ''                             # undoing the move
+                if score > best_score:
+                    best_score = score
+                    best_move = [row, col]
 
-    # Traverse all cells, evaluate minimax function for
-    # all empty cells. And return the cell with optimal
-    # value.
-    for i in range(3):
-        for j in range(3):
+    grid[best_move[0]][best_move[1]] = ai
 
-            # Check if cell is empty
-            if board[i][j] == '':
-
-                # Make the move
-                board[i][j] = player
-
-                # compute evaluation function for this
-                # move.
-                moveVal = minimax(board, 0, False)
-
-                # Undo the move
-                board[i][j] = ''
-
-                # If the value of the current move is
-                # more than the best value, then update
-                # best/
-                if moveVal > bestVal:
-                    bestMove = (i, j)
-                    bestVal = moveVal
-
-    # print("The value of the best Move is :", bestVal)
-    # print(f"Position for the best move - Row: {bestMove[0]}, Column: {bestMove[1]}")
-    return bestMove
+    return best_move
 
 
-def Game(grid):                         # probably redundant function
+def Game(grid):                      
+    try:
+        best_move = findBestMove(grid)              # Exception handler for situation in which we have the last move
+        grid[best_move[0]][best_move[1]] = 'x'      # (does not know what to do because best_move is NONE)
+    except Exception:                               # It is a tie automatically since we cannot win with the last move
+        return grid, 0, True, None                  # (we cannot win at all in general...)
 
-    best_move = findBestMove(grid)
-    # print(f"best move: {best_move}")
+    score = evaluate(grid)
+    isFinished = False
+    winner = None
 
-    # print(f"Position for the best move - Row: {best_move[0]}, Column: {best_move[1]}")
+    if score == 1:
+        winner = "AI"
+        isFinished = True
+    elif score == -1:
+        winner = "Human"
+        isFinished = True
 
-    grid[best_move[0]][best_move[1]] = 'x'
+    return grid, score, isFinished, winner
 
-    return grid
+
+

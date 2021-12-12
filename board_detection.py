@@ -145,9 +145,6 @@ if __name__ == "__main__":
         k = cv2.waitKey(50)
 
         if k & 0xFF == ord('q'):
-            if grid is not None:
-                print("\n")
-                print(grid)
             break
 
         if grid is not None:
@@ -155,16 +152,14 @@ if __name__ == "__main__":
 
         if k & 0xFF == ord('\r'):
             grid = circle_position(circles, contour, grid)
-            print("\n")
-            print(grid)
 
         if k & 0xFF == ord(' '):
             if grid is not None:
                 grid, score, isFinished, winner = Game(grid)
-                print("\n")
-                print(grid)
+
                 if isFinished:
-                    print("Game finished")
+                    print("\nGame finished:")
+                    print(grid)
                     if winner:
                         print(f"{winner} wins!")
                         break

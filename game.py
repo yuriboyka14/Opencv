@@ -1,7 +1,7 @@
 ai, human = 'x', 'o'
 
 
-def isMovesLeft(grid):
+def moves_left(grid):
     for i in range(3):
         for j in range(3):
             if grid[i][j] == '':
@@ -47,7 +47,7 @@ def minimax(grid, depth, isMax):
     score = evaluate(grid)
 
     if score == 0:
-        if not isMovesLeft(grid):
+        if not moves_left(grid):
             return score                                        # tie
     elif score == 1 or score == -1:
         return score                                            # either 1 (ai win) or -1 (human win)
@@ -75,7 +75,7 @@ def minimax(grid, depth, isMax):
         return best_score
 
 
-def findBestMove(grid):
+def find_best_move(grid):
     best_move = None
     best_score = -1000000
     for row in range(3):
@@ -95,7 +95,7 @@ def findBestMove(grid):
 
 def Game(grid):                      
     try:
-        best_move = findBestMove(grid)              # Exception handler for situation in which we have the last move
+        best_move = find_best_move(grid)              # Exception handler for situation in which we have the last move
         grid[best_move[0]][best_move[1]] = 'x'      # (does not know what to do because best_move is NONE)
     except Exception:                               # It is a tie automatically since we cannot win with the last move
         return grid, 0, True, None                  # (we cannot win at all in general...)
